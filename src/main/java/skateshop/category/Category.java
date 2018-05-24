@@ -6,6 +6,7 @@ public class Category {
 
     private final String type;
 
+
     public Category(String type) {
         this.type = type;
     }
@@ -26,4 +27,5 @@ public class Category {
     public int hashCode() {
         return Objects.hash(type);
     }
+
 }

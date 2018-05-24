@@ -13,5 +13,6 @@ public class PostgresConnectionPool extends BasicDataSource {
         this.setUsername("postgres");
         this.setPassword("postgres");
         this.setInitialSize(1);
+        this.setMaxTotal(5);
     }
 }

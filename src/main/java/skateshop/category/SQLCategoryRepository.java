@@ -3,9 +3,9 @@ package skateshop.category;
 import infrastructure.db.postgres.PostgresConnectionPool;
 
 import java.sql.*;
-import java.util.Properties;
+import java.util.Optional;
 
-public class SQLCategoryRepository implements CategoryRepository {
+public class SQLCategoryRepository {
     private final static String SELECT_CATEGORY_BY_NAME = "SELECT type FROM category where type = ? ";
     private final static String INSERT_CATEGORY = "INSERT INTO category (type) VALUES (?)";
     private final PostgresConnectionPool postgresConnectionPool;
@@ -18,14 +18,14 @@ public class SQLCategoryRepository implements CategoryRepository {
         try (Connection connection = postgresConnectionPool.getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_CATEGORY);
             preparedStatement.setString(1,category.getType());
-            preparedStatement.executeUpdate();
+            return preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return 0;
     }
 
-    public Category getBy(String type) {
+    public Optional<Category> getBy(String type) {
 
 
         try (Connection connection = postgresConnectionPool.getConnection()){
@@ -33,23 +33,12 @@ public class SQLCategoryRepository implements CategoryRepository {
             preparedStatement.setString(1, type);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                return new Category(resultSet.getString("type"));
+                return Optional.of(new Category(resultSet.getString("type")));
             }
-
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return null;
     }
-
-    private Connection createConnection(String url) throws SQLException {
-        String user = "postgres";
-        String password = "postgres";
-        return DriverManager.getConnection(url, user, password);
-    }
-
-
-    }
+}
 
