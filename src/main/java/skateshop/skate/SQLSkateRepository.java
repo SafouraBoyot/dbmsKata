@@ -9,6 +9,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
+
 public class SQLSkateRepository {
     private final PostgresConnectionPool postgresConnectionPool;
 
@@ -32,24 +34,23 @@ public class SQLSkateRepository {
                 SQLCategoryRepository sqlCategoryRepository = new SQLCategoryRepository(postgresConnectionPool);
                 Optional<Category> optionalCategory = sqlCategoryRepository.getBy(skate.getCategory().getType());
 
-                if (optionalCategory==null) {
-                    throw new Exception("Category Does Not Exist!!!");
-                }
+                ofNullable(optionalCategory).orElseThrow(() -> new Exception("Category Does Not Exist!!!"));
+
                 preparedStatement.setString(2, optionalCategory.get().getType());
                 preparedStatement.setInt(3, skate.getStock());
                 preparedStatement.executeUpdate();
                 connection.commit();
             } catch (Exception e) {
                 connection.rollback();
+                e.printStackTrace();
             }
-
 
         } catch (SQLException e) {
             e.printStackTrace();
-
         }
 
     }
+
     public Skate getBy(String name) {
 
         return new Skate("K2 Inline", new Category("Inline skate"), 10);

@@ -27,7 +27,7 @@ public class SkateShopShould {
 
     @Test public void
     create_a_skate_in_db(){
-        Skate skate = new Skate("K2 Inline",new Category("Inline skate"), 10);
+        Skate skate = new Skate("K2 Inline",new Category("Inline"), 10);
         SQLSkateRepository sqlSkateRepository = new SQLSkateRepository(new PostgresConnectionPool("skateshop") );
 
         sqlSkateRepository.save(skate);
