@@ -1,3 +1,4 @@
+import infrastructure.db.LoadProperties;
 import infrastructure.db.postgres.PostgresConnectionPool;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -26,6 +27,7 @@ public class SkateShopShould {
     public static final String INLINE_CATEGORY = "Inline";
     public static final String K2_SKATE_MODEL = "K2 Inline";
     public static final String OTHER_CATEGORY = "Inline 2";
+    public static final String FILE_PATH = "db/configuration/postgres.properties";
     private PostgresConnectionPool connectionPool;
     private SQLSkateRepository sqlSkateRepository;
     private SQLCategoryRepository sqlCategoryRepository;
@@ -33,7 +35,7 @@ public class SkateShopShould {
     @Before
     public void
     setUp() {
-        connectionPool = new PostgresConnectionPool(SKATESHOP_DB_NAME);
+        connectionPool = new PostgresConnectionPool(LoadProperties.getProperties(FILE_PATH));
         truncate_tables();
         sqlSkateRepository = new SQLSkateRepository(connectionPool);
         sqlCategoryRepository = new SQLCategoryRepository(connectionPool);
@@ -42,7 +44,7 @@ public class SkateShopShould {
 
     private static void truncate_tables() {
 
-        PostgresConnectionPool connectionPool = new PostgresConnectionPool(SKATESHOP_DB_NAME);
+        PostgresConnectionPool connectionPool = new PostgresConnectionPool(LoadProperties.getProperties(FILE_PATH));
         try (Connection connection = connectionPool.getConnection()) {
 
             connection.setAutoCommit(false);

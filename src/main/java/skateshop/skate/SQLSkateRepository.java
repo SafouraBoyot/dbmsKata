@@ -13,10 +13,10 @@ import java.util.Optional;
 public class SQLSkateRepository {
     private final PostgresConnectionPool postgresConnectionPool;
 
-    private final static String INSERT_SKATE = "INSERT INTO skates (name , category , stock) VALUES (?, ?, ?)";
-    private final static String SELECT_SKATE_BY_NAME = "SELECT name,category,stock FROM skates where name = ? ";
-    private final static String UPDATE_SKATE_BY_NAME = "UPDATE skates set category = ?, stock = ? where name = ?";
-    private final static String DELETE_SKATE_BY_NAME = "DELETE FROM skates where name = ?";
+    private final static String INSERT_SKATE = "INSERT INTO skate (name , category , stock) VALUES (?, ?, ?)";
+    private final static String SELECT_SKATE_BY_NAME = "SELECT name,category,stock FROM skate where name = ? ";
+    private final static String UPDATE_SKATE_BY_NAME = "UPDATE skate set category = ?, stock = ? where name = ?";
+    private final static String DELETE_SKATE_BY_NAME = "DELETE FROM skate where name = ?";
 
 
     public SQLSkateRepository(PostgresConnectionPool postgresConnectionPool) {
