@@ -14,11 +14,15 @@ public class SQLCategoryRepository {
         this.postgresConnectionPool = postgresConnectionPool;
     }
 
-    public int save(Category category) {
-        try (Connection connection = postgresConnectionPool.getConnection()){
+    public int saveWithConnection(Category category, Connection connection) throws SQLException {
             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_CATEGORY);
             preparedStatement.setString(1,category.getType());
             return preparedStatement.executeUpdate();
+    }
+
+    public int save(Category category) {
+        try (Connection connection = postgresConnectionPool.getConnection()){
+            return saveWithConnection(category, connection);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -38,7 +42,7 @@ public class SQLCategoryRepository {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
+        return Optional.empty();
     }
 }
 

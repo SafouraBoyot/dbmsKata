@@ -6,16 +6,17 @@ import skateshop.category.SQLCategoryRepository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
-
-import static java.util.Optional.ofNullable;
 
 public class SQLSkateRepository {
     private final PostgresConnectionPool postgresConnectionPool;
 
     private final static String INSERT_SKATE = "INSERT INTO skates (name , category , stock) VALUES (?, ?, ?)";
-    private final static String SELECT_SKATE_BY_NAME = "SELECT type FROM category where type = ? ";
+    private final static String SELECT_SKATE_BY_NAME = "SELECT name,category,stock FROM skates where name = ? ";
+    private final static String UPDATE_SKATE_BY_NAME = "UPDATE skates set category = ?, stock = ? where name = ?";
+    private final static String DELETE_SKATE_BY_NAME = "DELETE FROM skates where name = ?";
 
 
     public SQLSkateRepository(PostgresConnectionPool postgresConnectionPool) {
@@ -28,21 +29,22 @@ public class SQLSkateRepository {
         try (Connection connection = postgresConnectionPool.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_SKATE);
             preparedStatement.setString(1, skate.getName());
+            SQLCategoryRepository sqlCategoryRepository = new SQLCategoryRepository(postgresConnectionPool);
             try {
                 connection.setAutoCommit(false);
-
-                SQLCategoryRepository sqlCategoryRepository = new SQLCategoryRepository(postgresConnectionPool);
                 Optional<Category> optionalCategory = sqlCategoryRepository.getBy(skate.getCategory().getType());
 
-                ofNullable(optionalCategory).orElseThrow(() -> new Exception("Category Does Not Exist!!!"));
+                if (!optionalCategory.isPresent()) {
+                    sqlCategoryRepository.saveWithConnection(skate.getCategory(), connection);
+                }
 
-                preparedStatement.setString(2, optionalCategory.get().getType());
+                preparedStatement.setString(2, skate.getCategory().getType());
                 preparedStatement.setInt(3, skate.getStock());
                 preparedStatement.executeUpdate();
                 connection.commit();
             } catch (Exception e) {
-                connection.rollback();
                 e.printStackTrace();
+                connection.rollback();
             }
 
         } catch (SQLException e) {
@@ -51,8 +53,49 @@ public class SQLSkateRepository {
 
     }
 
-    public Skate getBy(String name) {
+    public Optional<Skate> getBy(String name) {
+        try (Connection connection = postgresConnectionPool.getConnection()) {
+            PreparedStatement selectSkatePreparedStaement = connection.prepareStatement(SELECT_SKATE_BY_NAME);
+            selectSkatePreparedStaement.setString(1, name);
+            ResultSet resultSet = selectSkatePreparedStaement.executeQuery();
+            if (resultSet.next()) {
+                return Optional.of(new Skate(resultSet.getString("name"),
+                        new Category(resultSet.getString("category")),
+                        resultSet.getInt("stock")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
 
-        return new Skate("K2 Inline", new Category("Inline skate"), 10);
+    }
+
+    public int update(Skate skate) {
+        try (Connection connection = postgresConnectionPool.getConnection()) {
+
+            PreparedStatement selectSkatePreparedStaement = connection.prepareStatement(UPDATE_SKATE_BY_NAME);
+            selectSkatePreparedStaement.setString(1, skate.getCategory().getType());
+            selectSkatePreparedStaement.setInt(2, skate.getStock());
+            selectSkatePreparedStaement.setString(3, skate.getName());
+            return selectSkatePreparedStaement.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public void deleteBy(String name) {
+
+        try (Connection connection = postgresConnectionPool.getConnection()) {
+
+            PreparedStatement selectSkatePreparedStaement = connection.prepareStatement(DELETE_SKATE_BY_NAME);
+            selectSkatePreparedStaement.setString(1, name);
+            selectSkatePreparedStaement.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 }
